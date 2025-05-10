@@ -5,12 +5,21 @@ import os
 load_dotenv('.secrets')
 os.environ["OPENAI_API_KEY"] = os.getenv('open_ai_api_key')
 
-def generate_new_filenames(filenames: list) -> list:
-    client = OpenAI()
+def generate_new_filenames(filenames: list[str | list[str | None]]) -> list[str]:
+    is_list = False
 
     # Combine file names into one string
-    filenames_str = "\n".join(filenames)
+    if not filenames:
+        raise ValueError('Filenames list is empty')
+    if all([isinstance(filename_lst, list) for filename_lst in filenames]):
+        is_list = True
+        filenames_str = "\n".join([current_name[0] for current_name in filenames])
+    elif all([isinstance(filename_str, str) for filename_str in filenames]):
+        filenames_str = "\n".join(filenames)
+    else:
+        raise ValueError('Unsupported file type in list')
 
+    client = OpenAI()
     # Define the prompt template as a system and user message
     response = client.responses.create(
         model="gpt-4o",
@@ -49,20 +58,9 @@ def generate_new_filenames(filenames: list) -> list:
 
     output_text = response.output_text
     list_ready_filenames = output_text.split('\n')
-    return [line.strip() for line in list_ready_filenames]
-
-if __name__ == '__main__':
-    # Sample names to correct
-    filenames_list = [
-        "01_Polecenia find i grep",
-        "02_Język skryptowy Bash",
-        "03_Sprawdzanie zajętego obszaru przestrzeni dyskowej",
-        "04_Prosty skrypt administracyjny",
-        "05_Tworzenie skryptu administracyjnego - kontynuacja",
-        "06_Skrypt administracyjny - dodanie nowego użytkownika",
-        "07_Jak z jednego obrazu zrobić dwa i potem trzy",
-        "08_Polecenia ls i du",
-        "09_Polecenia LS i DU"
-    ]
-
-    print(generate_new_filenames(filenames_list))
+    if is_list:
+        for filename_lst, line in zip(filenames, list_ready_filenames):
+                filename_lst[1] = line.strip()
+        return filenames
+    else:
+        return [line.strip() for line in list_ready_filenames]
