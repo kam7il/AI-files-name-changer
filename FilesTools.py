@@ -32,6 +32,10 @@ class PathListEditor:
             )
             self.__path_obj_list_current_new_names.append(obj)
 
+    def update_path_name_mapping(self, old_new_names: list[list[str]]) -> None:
+        for obj, names in zip(self.__path_obj_list_current_new_names, old_new_names):
+            obj.new_name = names[1]
+
     def extract_from_path_obj_list_current_new_names(self) -> list[list[str | None]]:
         if not self.__path_obj_list_current_new_names:
             self.__create_path_list_files(*self.__extensions, search_path=self.__search_path)
@@ -70,7 +74,10 @@ class PathListEditor:
         self.__create_path_list_files(*self.__extensions, search_path=self.__search_path)
         return self.__path_obj_list_current_new_names
 
-    def __rename_files(
+    def rename_files(self):
+        pass
+
+    def rename_files_1(
             self,
             dry_run: bool = True,
             rename_function: Callable[[Path], str] | None = None,
@@ -85,6 +92,10 @@ class PathListEditor:
             return f"renamed_{path.stem}"
         :param new_extension: Optional new extension (e.g., '.md', '.bak').
         """
+        raise NotImplementedError("This method has not been implemented yet")
+
+        self.__create_path_list_files(*self.__extensions, search_path=self.__search_path)
+
         for file_path in self.__path_list_files:
             if rename_function:
                 new_name = rename_function(file_path)
@@ -99,12 +110,3 @@ class PathListEditor:
             else:
                 print(f"Renaming: {file_path} -> {new_file_path}")
                 file_path.rename(new_file_path)
-
-
-# if __name__ == '__main__':
-#     tool = PathListEditor()
-#     tool.create_path_list_files('.txt')
-#     file_list = tool.get_path_list_files()
-#     file_list1 = tool.get_path_obj_list_current_new_names()
-#     print(file_list)
-#     print(file_list1)
